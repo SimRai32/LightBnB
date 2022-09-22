@@ -1,6 +1,12 @@
 const properties = require('./json/properties.json');
 const users = require('./json/users.json');
-
+const { Pool } = require('pg');
+const pool = new Pool({
+  user: 'vagrant',
+  password: '123',
+  host: 'localhost',
+  database: 'vagrant'
+});
 /// Users
 
 /**
@@ -67,11 +73,25 @@ exports.getAllReservations = getAllReservations;
  * @return {Promise<[{}]>}  A promise to the properties.
  */
 const getAllProperties = function(options, limit = 10) {
-  const limitedProperties = {};
-  for (let i = 1; i <= limit; i++) {
-    limitedProperties[i] = properties[i];
-  }
-  return Promise.resolve(limitedProperties);
+
+  const setQuery = `
+  SELECT *
+  FROM properties
+  LIMIT $1
+  `;
+  const values = [limit];
+  return pool
+  .query(
+    setQuery,
+    values)
+  .then((result) => {
+    console.log(result.rows);
+    return (result.rows);
+  })
+  .catch((err) => {
+    console.log(err.message);
+  });
+ 
 }
 exports.getAllProperties = getAllProperties;
 
